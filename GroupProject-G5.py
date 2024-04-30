@@ -26,16 +26,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 # ** 1. Load and Understand the Data
 #
 # Load the dataset into a dataframe called myDF
 myDF = pd.read_csv('2.1M.csv', header=1)
-
+myDF= myDF.set_index('Month')
+#df.index = pd.to_datetime(df.index)
+myDF = pd.to_datetime(myDF['Month'], format="%b-%y")
 #Check the dataset infomation
 print(myDF.info())
 
@@ -88,26 +91,32 @@ if missing_data.any():
 plt.plot(myDF['Month'], myDF['Grade A Sheung Wan'], 'x')
 plt.grid(True)
 
+plt.plot(myDF['Month'], myDF['Grade A Central'], 'o')
+plt.plot(myDF['Month'], myDF['Grade B Central'], 'o')
+plt.plot(myDF['Month'], myDF['Grade C Central'], 'o')
 
-# ** 3. Model Building
-#
-# -- 3.1 Split the data into training and testing sets
-X = myDF.drop('Grade A Sheung Wan', axis=1)
-y = myDF['Grade A Sheung Wan']
+#df['Grade A Central'] = df.target
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X = myDF.index.month
+y = myDF['Grade A Central']
+X = np.array(X).reshape(-1, 1)
+x_train, x_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state = 42 )
+print(x_train)
+print(Y_train)
 
-# -- 3.2 Train the Logistic Regression model
-model = LogisticRegression()
-model.fit(X_train, y_train)
 
-# ** 4. Model Evaluation
-#
-# -- 4.1 Make predictions
-y_pred = model.predict(X_test)
+model = LinearRegression()
+model.fit(x_train,Y_train)
 
-# -- 4.2 Evaluate the model
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print("Classification Report:\n", classification_report(y_test, y_pred))
-print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+# Predicting rent for the test set
+Y_pred = model.predict(x_test)
 
+# Evaluating the model
+mse = mean_squared_error(Y_test, Y_pred)
+r2 = r2_score(Y_test, Y_pred)
+print("Mean Squared Error:", mse)
+print("R-squared:", r2)
+
+# Optionally, you can print the coefficients and intercept of the model
+print("Coefficients:", model.coef_)
+print("Intercept:", model.intercept_)
