@@ -38,7 +38,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 myDF = pd.read_csv('2.1M.csv', header=1)
 myDF= myDF.set_index('Month')
 #df.index = pd.to_datetime(df.index)
-myDF = pd.to_datetime(myDF['Month'], format="%b-%y")
+myDF.index = pd.to_datetime(myDF.index, format="%b-%y")
 #Check the dataset infomation
 print(myDF.info())
 
